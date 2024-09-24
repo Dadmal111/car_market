@@ -14,7 +14,7 @@ type Car struct {
 	Price         float64
 }
 
-func CreatModelCar(db *sql.DB, brand string, engineVolume float64, color string, wheelPosition string) error {
+func CreateModelCar(db *sql.DB, brand string, engineVolume float64, color string, wheelPosition string) error {
 	var exists bool
 	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM car_models WHERE brand brand = $1 AND engine_volume = $2 AND color = $3 AND wheel_position a= $4)",
 		brand, engineVolume, color, wheelPosition).Scan(&exists)
@@ -111,4 +111,46 @@ func UpdateCarPrice(db *sql.DB, carID int, newPrice float64) error {
 		return err
 	}
 	return err
+}
+
+// поиск всех авто у определенног опользователя
+func GetCarsByUserID(db *sql.DB, userID int) ([]Car, error) {
+	rows, err := db.Query("SELECT id, engine_volume, color, brand, wheel_position, price FROM cars WHERE owner_id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var cars []Car // создаем срез для хранения бибик у определенног опользователя
+	for rows.Next() {
+		var car Car
+		err := rows.Scan(&car.ID, &car.EngineVolume, &car.Color, &car.Brand, &car.WheelPosition, &car.Price)
+		if err != nil {
+			return nil, err
+		}
+		cars = append(cars, car) //append используем для автомат расширения среза, чтоб у богоча не заканчиваля гараж
+	}
+	return cars, nil
+}
+
+// получение списка всех бибик
+func GetCars(db *sql.DB, sortBy string, brand string) ([]Car, error) {
+	query := `SELECT id, engine_volume, color, brand, wheel_position, price FROM cars WHERE ($1 IS NULL OR brand = $1) ORDER BY ` + sortBy
+	//можно сортировать по цене или бренду
+	rows, err := db.Query(query, brand)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var cars []Car
+	for rows.Next() {
+		var car Car
+		err := rows.Scan(&car.ID, &car.EngineVolume, &car.Color, &car.Brand, &car.WheelPosition, &car.Price)
+		if err != nil {
+			return nil, err
+		}
+		cars = append(cars, car)
+	}
+	return cars, nil
 }

@@ -2,6 +2,9 @@ include .env
 
 DB_URL=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable
 
+run:
+	go run main.go
+	
 # Запуск миграций вверх
 migrate-up:
 	migrate -database $(DB_URL) -path migrations up
