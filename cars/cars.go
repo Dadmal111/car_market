@@ -16,7 +16,7 @@ type Car struct {
 
 func CreateModelCar(db *sql.DB, brand string, engineVolume float64, color string, wheelPosition string) error {
 	var exists bool
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM car_models WHERE brand brand = $1 AND engine_volume = $2 AND color = $3 AND wheel_position a= $4)",
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM car_models WHERE brand = $1 AND engine_volume = $2 AND color = $3 AND wheel_position = $4)",
 		brand, engineVolume, color, wheelPosition).Scan(&exists)
 	if err != nil {
 		return err
